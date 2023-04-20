@@ -1,0 +1,13 @@
+proxy:
+  http: 127.0.0.1:56789
+  https: 127.0.0.1:56789
+
+plugin:
+  # 控制流程中keyword顺序
+  infoGather:
+    ENScan:
+    # 插件名须与plugins/文件名.py对应
+      cmd: ".\\module\\ENScan_GO\\ENScan.exe -debug -is-merge -branch -o {} -n {}"
+  targetCheck:
+  vulnTest:
+  reportGene:
