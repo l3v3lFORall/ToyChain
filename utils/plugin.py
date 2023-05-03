@@ -1,5 +1,6 @@
 import os
 import utils.common as commonAPI
+import utils.db as dbAPI
 #https://www.cnblogs.com/Cl0ud/p/16065198.html
 
 class Plugin():
@@ -39,11 +40,14 @@ def resultAdd(da, db):
     # pDebug(str(da.keys()) + str(str(db.keys())))
     flag = {}
     for key in da.keys():
-        flag[key] = da[key] + db.pop(key)
+        if db.__contains__(key):
+            flag[key] = da[key] + db.pop(key)
+        else:
+            flag[key] = da[key]
     flag.update(db)
     return flag 
 
-def startPlugin(keyword, pDict, Config, target):
+def startPlugin(keyword, pDict, Config, target, other):
     """
     startPlugin 对目标target执行由keyword指定的某类型的所有插件
 
@@ -52,6 +56,7 @@ def startPlugin(keyword, pDict, Config, target):
         pDict (list): 插件配置字典
         Config (dict): runtime中某阶段的配置
         target (str): 总目标
+        other (dict): 上一个插件运行的中间结果
 
     Returns:
         _type_: 整理好的插件运行结果，格式如插件模板所示
@@ -69,8 +74,15 @@ def startPlugin(keyword, pDict, Config, target):
         _Config["Target"] = target
         _Config["proxy"] = Config["proxy"]
         commonAPI.pDebug(f'| 即将运行插件 {pName}，使用配置：{_Config}')
-        temp = loadedPlugin.customPlugin().run(config=_Config)
+        commonAPI.pDebug(other)
+        temp = loadedPlugin.customPlugin().run(config=_Config, other=other)
         pluginReturned = resultAdd(pluginReturned, temp)
+        other = pluginReturned
+        target = pluginReturned["Target"]
+        commonAPI.pDebug(f'| 得到数据 {pluginReturned}')
+        dbAPI.save(Config["tempData"]["path"], pluginReturned)
         
     return pluginReturned
-        
+    
+    
+    

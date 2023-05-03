@@ -4,7 +4,11 @@ from utils.common import pInfo
 
 
 class customPlugin(_up.Plugin):
-    """infoGather 工具ENScanGO plugin"""
+    """
+    infoGather 工具ENScanGO plugin
+    一款基于各大企业信息API的工具，解决在遇到的各种针对国内企业信息收集难题。一键收集控股公司ICP备案、APP、小程序、微信公众号等信息聚合导出。
+    https://github.com/wgpsec/ENScan_GO
+    """
     def __init__(self):
         self.TYPE = "infoGather"
         self.pluginResult = {
@@ -19,40 +23,37 @@ class customPlugin(_up.Plugin):
         Returns:
             _type_: _description_
         """
-        
-        def extractICP():
-            result = []
-            ws = resultXlsx['ICP备案']
-            if ws["C1"].value != "域名":
-                raise Exception("ICP备案的结果不符合预期")
-            for row in ws[f'C2:C{ws.max_row}']:
-                for cell in row:
-                    result.append(cell.value)
-            return result
-        def extractAPP():
-            result = []
-            ws = resultXlsx['APP']
-            if ws["A1"].value != "名称":
-                raise Exception("APP信息的结果不符合预期")
-            for row in ws[f'A2:A{ws.max_row}']:
-                for cell in row:
-                    result.append(cell.value)
-            return result            
-        import os
-        fileList = os.listdir(path)
-        from openpyxl import load_workbook
-        for _fl in fileList:
-            resultXlsx = load_workbook(
-                os.path.join(path, _fl)
-            )
-            try:
+        try:
+            def extractICP():
+                result = []
+                ws = resultXlsx['ICP备案']
+                if ws["C1"].value != "域名":
+                    raise Exception("ICP备案的结果不符合预期")
+                for row in ws[f'C2:C{ws.max_row}']:
+                    for cell in row:
+                        result.append(cell.value)
+                return result
+            def extractAPP():
+                result = []
+                ws = resultXlsx['APP']
+                if ws["A1"].value != "名称":
+                    raise Exception("APP信息的结果不符合预期")
+                for row in ws[f'A2:A{ws.max_row}']:
+                    for cell in row:
+                        result.append(cell.value)
+                return result            
+            import os
+            fileList = os.listdir(path)
+            from openpyxl import load_workbook
+            for _fl in fileList:
+                resultXlsx = load_workbook(
+                    os.path.join(path, _fl)
+                )
                 self.pluginResult["subdomain"] = extractICP()
                 self.pluginResult["app"] = extractAPP()
-            except Exception as e:
-                pInfo(f"|--插件提取数据出错：{resultXlsx}")
-                pInfo(f"|--{e}")
                 continue
-        
+        except Exception as e:
+            pInfo(f"|--插件提取数据出错：{e}")
 
     
     
@@ -79,14 +80,16 @@ class customPlugin(_up.Plugin):
             os.makedirs(outPath)
         cmd = cmd.format(outPath, kwargs["config"]["Target"])
         pInfo(f"|--设定执行命令：{cmd}")
-        import subprocess
         
+        import subprocess
         res = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
         output, error_msgs = res.communicate()
         print(output.decode(encoding='utf-8'))
-        
-        self.extractData(outPath)
-        self.pluginResult["other"].append(outPath)
-        pInfo(f"|--获取子域名{len(self.pluginResult['subdomain'])}条，APP信息{len(self.pluginResult['app'])}条；导出文件到{self.pluginResult['other']}")
+        try:
+            self.extractData(outPath)
+            self.pluginResult["other"].append(outPath)
+            pInfo(f"|--获取子域名{len(self.pluginResult['subdomain'])}条，APP信息{len(self.pluginResult['app'])}条；导出文件到{self.pluginResult['other']}")
+            self.pluginResult["Target"] = kwargs["config"]["Target"]
+        except Exception as e:
+            pInfo(f"|--插件提取数据出错：{e}")
         return self.pluginResult

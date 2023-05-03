@@ -44,52 +44,6 @@ logger.add(sys.stderr, level='INFOR', format=stdout_fmt, enqueue=True)
 logger.add(LOG_PATH, level='DEBUG', format=logfile_fmt, enqueue=True, encoding='utf-8')
 
 ####################################################################
-@logger.catch
-def openSqlite(db_path="out/test.db"):
-    """
-    openSqlite 建立Sqlite数据库
-
-    Args:
-        db_path (str, optional): _description_. Defaults to "out".
-
-    Returns:
-        c : 数据库cuesor
-        conn : 数据库连接
-    """
-    pDebug("| 正在打开数据库")
-    # https://www.runoob.com/sqlite/sqlite-python.html
-    conn = sqlite3.connect(db_path)
-    pDebug("| 数据库打开成功")
-    return conn
-@logger.catch
-def initSqlite(conn):
-    """
-    initSqlite 建表
-    """
-    pDebug("| 正在初始化数据库")
-    cursor = conn.cursor()
-    cursor.execute()
-    cursor.close()
-    conn.commit()
-    
-
-@logger.catch
-def refreshSqlite(conn, db_path="out/test.db"):
-    pDebug("| 正在重建数据库连接")
-    closeSqlite(conn)
-    c, _conn = openSqlite(db_path=db_path)
-    return c, _conn
-
-@logger.catch
-def closeSqlite(conn):
-    """
-    closeSqlite 关闭数据库
-
-    Args:
-        conn (_type_): _description_
-    """
-    pDebug("| 正在关闭数据库")
-    conn.close()
 
 @logger.catch
 def checkVersion(url, version):

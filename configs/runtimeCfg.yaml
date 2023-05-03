@@ -7,7 +7,12 @@ plugin:
   infoGather:
     ENScan:
     # 插件名须与plugins/文件名.py对应
-      cmd: ".\\module\\ENScan_GO\\ENScan.exe -debug -is-merge -branch -o {} -n {}"
+      cmd: "module\\ENScan_GO\\ENScan.exe -debug -is-merge -branch -o {} -n {}"
+    OneForAll:
+      cmd: "C:\\Users\\33119\\miniconda3\\envs\\toychain\\python.exe module\\OneForAll\\oneforall.py --targets {} --fmt csv --path {} run"
   targetCheck:
   vulnTest:
   reportGene:
+
+tempData:
+  path: "out/"

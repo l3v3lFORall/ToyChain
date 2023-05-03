@@ -17,6 +17,7 @@ class one():
     def __init__(self, slience='n', target="baidu.com"):
         self.slience = slience
         self.target = target
+        self.tempData = None
         
     def printBanner(self):
         """
@@ -90,9 +91,8 @@ class one():
     
     def cookRoutine(self):
         """
-        cookRoutine : 按照runtimeCfg.yaml创建插件运行顺序、建立数据库
+        cookRoutine : 按照runtimeCfg.yaml创建插件运行顺序
         """
-        self.dbConn = commonAPI.openSqlite(f"out/{self.target}.db")
         return self.runtimeCfg["plugin"]
         
     @logger.catch()    
@@ -105,14 +105,16 @@ class one():
         if self.checkEnvir() != True:
             print("| Check the Internet Connect!")
             return 1
-        pluginRoutine = self.cookRoutine()
+        pluginRoutine = self.cookRoutine()        
         commonAPI.pDebug(f'| 加载配置流程 {pluginRoutine}')
         for phase, plugin in pluginRoutine.items():
             commonAPI.pInfo(f"|- {phase}阶段 执行{plugin}")
-            data = pluginAPI.startPlugin(
-                phase, plugin, self.runtimeCfg, target=self.target
+            self.tempData = pluginAPI.startPlugin(
+                phase, plugin, self.runtimeCfg, target=self.target, other=self.tempData
             )
-            commonAPI.pDebug(f'| 得到数据 {data}')
+
+
+
 if "__main__" in __name__:
 
     fire.Fire(one)
