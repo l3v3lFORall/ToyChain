@@ -19,6 +19,32 @@ class customPlugin(_up.Plugin):
         Returns:
             _type_: _description_
         """
+        # 依次处理所有的csv文件
+        def _extract(_path):
+            # pInfo(_path)
+            _ = []
+            # _path = r"C:\Users\33119\Desktop\ToyChain\module\OneForAll\results\baidu.com.csv"
+            flag = False
+            import csv
+            with open(_path, "r", encoding="utf8", newline='') as _c:
+                resultCsv = csv.reader(_c)
+                for row in resultCsv:
+                    if row[5] == "subdomain":
+                        flag = True
+                    else:
+                        _.append(row[5])
+            if flag != True:
+                raise Exception("插件生成的表格不符合预期")
+            return _
+        import os
+        result = []
+        # path = r"C:\Users\33119\Desktop\ToyChain\module\OneForAll\results"
+        for _fn in os.listdir(path):
+            if _fn.endswith(".csv"):
+                result += _extract(os.path.join(path, _fn))
+        # pInfo(result)
+        # input()
+
         return self.pluginResult
 
     
@@ -71,7 +97,7 @@ class customPlugin(_up.Plugin):
             dict: 提取子域名、APP数据，保存导出文件的路径
         """
         outPath, myProxy, cmd = self.setEnv(kwargs)
-        self.getResult(cmd)
+        # self.getResult(cmd)
         self.pluginResult = self.extractData(outPath)
         self.pluginResult["other"].append(outPath)
         self.pluginResult = self.resultFilter()
