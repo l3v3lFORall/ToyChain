@@ -10,7 +10,8 @@ class customPlugin(_up.Plugin):
         self.pluginResult = {
             "subdomain": [],
             "ip": [],
-            "other": []
+            "other": [],
+            "Target": []
         }
     
     def extractData(self, path):
@@ -63,8 +64,10 @@ class customPlugin(_up.Plugin):
         if not os.path.exists(outPath):
             os.makedirs(outPath)
         targetPath = os.path.join(outPath, "targets.txt")
+        if type(kwargs["config"]["Target"]) == type(""):
+            temp = [kwargs["config"]["Target"]]
         with open(targetPath, "wb") as _f:
-            _f.write(b'\n'.join([_.encode() for _ in kwargs["config"]["Target"]]))
+            _f.write(b'\n'.join([_.encode() for _ in temp]))
     
         cmd = cmd.format(targetPath, outPath)
         pInfo(f"|--设定执行命令：{cmd}")
@@ -76,11 +79,12 @@ class customPlugin(_up.Plugin):
         output, error_msgs = res.communicate()
         print(output.decode(encoding='utf-8'))
 
-    def resultFilter(self):
+    def resultFilter(self, kwargs):
         """
         安装相邻执行的两个插件的需要对target进行修改
         """
-        self.pluginResult["Target"] = self.pluginResult["subdomain"]
+        self.pluginResult["Target"] = self.pluginResult["subdomain"] + [kwargs["config"]["Target"]]
+        self.pluginResult["Target"] = list(set(self.pluginResult["Target"]))
         return self.pluginResult
 
 
@@ -101,4 +105,5 @@ class customPlugin(_up.Plugin):
         self.pluginResult = self.extractData(outPath)
         self.pluginResult["other"].append(outPath)
         self.pluginResult = self.resultFilter()
+        pInfo(f"输出子域名数量：{len(self.pluginResult['Target'])}")
         return self.pluginResult

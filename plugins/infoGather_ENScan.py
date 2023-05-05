@@ -14,7 +14,8 @@ class customPlugin(_up.Plugin):
         self.pluginResult = {
             "subdomain": [],
             "ip": [],
-            "other": []
+            "other": [],
+            "Target": []
         }
         
     def extractData(self, path):
@@ -85,9 +86,11 @@ class customPlugin(_up.Plugin):
         安装相邻执行的两个插件的需要对target进行修改
         将Target变为ICP备案的域名列表
         """
-        if self.pluginResult["subdomain"] != []:
-            self.pluginResult["Target"] = self.pluginResult["subdomain"]
-        self.pluginResult["Target"] =  [kwargs["config"]["Target"]]
+        if type(self.pluginResult["Target"]) == type(""):
+            self.pluginResult["Target"] = [self.pluginResult["Target"]] + [kwargs["config"]["Target"]]
+        self.pluginResult["Target"] += list(set(self.pluginResult["subdomain"]))
+        self.pluginResult["Target"] = list(set(self.pluginResult["Target"]))
+
         return self.pluginResult
     
     def run(self, *args, **kwargs):

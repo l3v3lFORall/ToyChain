@@ -15,7 +15,8 @@ class customPlugin(_up.Plugin):
         self.pluginResult = {
             "subdomain": [],
             "ip": [],
-            "other": []
+            "other": [],
+            "Target": []
         }
         
     def extractData(self, path):
@@ -37,7 +38,7 @@ class customPlugin(_up.Plugin):
         """
         设置插件使用代理/设定运行结果保存位置/拼接命令
         """
-        pInfo(self.__doc__)
+        # pInfo(self.__doc__)
         import time
         outPath = f"out/infoGather_ksubdomain/{int(round(time.time() * 1000))}"
         resultPath = outPath + "/ksubdomain.txt"
@@ -49,8 +50,10 @@ class customPlugin(_up.Plugin):
         if not os.path.exists(outPath):
             os.makedirs(outPath)
         targetPath = os.path.join(outPath, "targets.txt")
+        if type(kwargs["config"]["Target"]) == type(""):
+            temp = [kwargs["config"]["Target"]]
         with open(targetPath, "wb") as _f:
-            _f.write(b'\n'.join([_.encode() for _ in kwargs["config"]["Target"]]))
+            _f.write(b'\n'.join([_.encode() for _ in temp]))
     
         cmd = cmd.format(targetPath, resultPath)
         pInfo(f"|--设定执行命令：{cmd}")
@@ -62,11 +65,13 @@ class customPlugin(_up.Plugin):
         output, error_msgs = res.communicate()
         print(output.decode(encoding='utf-8'))
 
-    def resultFilter(self):
+    def resultFilter(self, kwargs):
         """
         安装相邻执行的两个插件的需要对target进行修改
         """
-        # self.pluginResult["Target"] = self.pluginResult["Target"]
+        pInfo(f"")
+        self.pluginResult["Target"] = self.pluginResult["subdomain"] + [kwargs["config"]["Target"]]
+        self.pluginResult["Target"] = list(set(self.pluginResult["Target"]))
         return self.pluginResult
 
 
@@ -80,11 +85,18 @@ class customPlugin(_up.Plugin):
         Returns:
             dict: 提取子域名、APP数据，保存导出文件的路径
         """
-
         outPath, myProxy, cmd, resultPath = self.setEnv(kwargs)
         self.getResult(cmd)
         self.pluginResult = self.extractData(resultPath)
         self.pluginResult["other"].append(outPath)
-        self.pluginResult = self.resultFilter()
-
+        self.pluginResult = self.resultFilter(kwargs)
+        pInfo(f"输出子域名数量：{len(self.pluginResult['Target'])}")
+        # print(self.pluginResult['Target'])
         return self.pluginResult
+    
+
+if __name__ == "__main__":
+    a = customPlugin()
+    # a.run(
+    #     config={"proxy":{"https":"127.0.0.1:56789"},"Target":["kiwi.com"],"cmd":"module/ksubdomain/ksubdomain enum --dl {} -o {} --skip-wild"}
+    # )
