@@ -8,9 +8,9 @@ class customPlugin(_up.Plugin):
     def __init__(self):
         self.TYPE = "infoGather"
         self.pluginResult = {
-            "subdomain": ["baidu.com", "https://img.baidu.com"],
-            "ip": ["127.0.0.1", "10.0.0.1/24"],
-            "other": ["a.txt", "b.xlsx"]
+            "subdomain": [],
+            "ip": [],
+            "other": []
         }
     
     def extractData(self, path):

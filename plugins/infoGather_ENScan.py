@@ -85,7 +85,9 @@ class customPlugin(_up.Plugin):
         安装相邻执行的两个插件的需要对target进行修改
         将Target变为ICP备案的域名列表
         """
-        self.pluginResult["Target"] = self.pluginResult["subdomain"]
+        if self.pluginResult["subdomain"] != []:
+            self.pluginResult["Target"] = self.pluginResult["subdomain"]
+        self.pluginResult["Target"] =  [kwargs["config"]["Target"]]
         return self.pluginResult
     
     def run(self, *args, **kwargs):

@@ -1,15 +1,17 @@
 proxy:
-  http: 127.0.0.1:56789
-  https: 127.0.0.1:56789
+  http: 10.8.0.2:56789
+  https: 10.8.0.2:56789
 
 plugin:
   # 控制流程中keyword顺序
   infoGather:
     ENScan:
     # 插件名须与plugins/文件名.py对应
-      cmd: "module\\ENScan_GO\\ENScan.exe -debug -is-merge -branch -o {} -n {}"
-    OneForAll:
-      cmd: "C:\\Users\\33119\\miniconda3\\envs\\toychain\\python.exe module\\OneForAll\\oneforall.py --targets {} --fmt csv --path {} run"
+      cmd: "module/ENScan_GO/ENScan -debug -is-merge -branch -o {} -n {}"
+    # OneForAll:
+    #   cmd: "python module/OneForAll/oneforall.py --targets {} --fmt csv --path {} run"
+    ksubdomain:
+      cmd: "module/ksubdomain/ksubdomain enum --dl {} -o {} --skip-wild "
   targetCheck:
   vulnTest:
   reportGene:
