@@ -47,15 +47,15 @@ def resultAdd(da, db):
     flag.update(db)
     return flag 
 
-def startPlugin(keyword, pDict, Config, target, other):
+def startPlugin(keyword, pDict, Config, target, pre):
     """
     startPlugin 对目标target执行由keyword指定的某类型的所有插件
 
     Args:
         keyword (str): 流程所处阶段的名称
         pDict (list): 插件配置字典
-        Config (dict): runtime中某阶段的配置
-        target (str): 总目标
+        Config (dict): runtime中的配置
+        target (list): 总目标
         other (dict): 上一个插件运行的中间结果
 
     Returns:
@@ -73,13 +73,15 @@ def startPlugin(keyword, pDict, Config, target, other):
         _Config = Config["plugin"][keyword][pName.split('_')[-1]]
         _Config["Target"] = target
         _Config["proxy"] = Config["proxy"]
+        
         commonAPI.pDebug(f'| 即将运行插件 {pName}，使用配置：{_Config}')
-        commonAPI.pDebug(other)
-        temp = loadedPlugin.customPlugin().run(config=_Config, other=other)
+        commonAPI.pDebug(pre)
+        temp = loadedPlugin.customPlugin().run(config=_Config, pre=pre)
+        
         pluginReturned = resultAdd(pluginReturned, temp)
-        other = pluginReturned
-        target = pluginReturned["Target"]
-        commonAPI.pDebug(f'| 得到数据 {pluginReturned}')
+        pre = pluginReturned
+        target = pluginReturned["target"]
+        # commonAPI.pDebug(f'| 得到数据 {pluginReturned}')
         dbAPI.save(Config["tempData"]["path"], pluginReturned)
         
     return pluginReturned

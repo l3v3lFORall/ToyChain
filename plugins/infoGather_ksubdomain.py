@@ -12,11 +12,17 @@ class customPlugin(_up.Plugin):
     """
     def __init__(self):
         self.TYPE = "infoGather"
+        self.Target = []
+        self.Result = {}
+        self.Save = {
+            "OutputPath":[],
+            "Command":[],
+            "CommandResult":[]
+            }
         self.pluginResult = {
-            "subdomain": [],
-            "ip": [],
-            "other": [],
-            "Target": []
+            "target": [],
+            "result": {},
+            "save": {}
         }
         
     def extractData(self, path):
@@ -30,7 +36,8 @@ class customPlugin(_up.Plugin):
             for _line in _f.readlines():
                 _line = _line.split("=>")[0]
                 result.append(_line)
-        self.pluginResult["subdomain"] = result
+        self.Result["subdomain"] = result
+        self.pluginResult["result"] = self.Result
         return self.pluginResult
 
     
@@ -42,6 +49,7 @@ class customPlugin(_up.Plugin):
         import time
         outPath = f"out/infoGather_ksubdomain/{int(round(time.time() * 1000))}"
         resultPath = outPath + "/ksubdomain.txt"
+        self.Save["OutputPath"].append(resultPath)
         pInfo(f"|--设定结果导出位置：{outPath}")
         myProxy = "https://" + kwargs["config"]["proxy"]["https"]
         pInfo(f"|--正在使用代理：{myProxy}")
@@ -50,13 +58,13 @@ class customPlugin(_up.Plugin):
         if not os.path.exists(outPath):
             os.makedirs(outPath)
         targetPath = os.path.join(outPath, "targets.txt")
-        if type(kwargs["config"]["Target"]) == type(""):
-            temp = [kwargs["config"]["Target"]]
+        self.Save["TargetPath"] = [targetPath]
         with open(targetPath, "wb") as _f:
-            _f.write(b'\n'.join([_.encode() for _ in temp]))
+            _f.write(b'\n'.join([_.encode() for _ in kwargs["config"]["Target"]]))
     
         cmd = cmd.format(targetPath, resultPath)
         pInfo(f"|--设定执行命令：{cmd}")
+        self.Save["Command"].append(cmd)
         return outPath, myProxy, cmd, resultPath
         
     def getResult(self, cmd):
@@ -69,9 +77,11 @@ class customPlugin(_up.Plugin):
         """
         安装相邻执行的两个插件的需要对target进行修改
         """
-        pInfo(f"")
-        self.pluginResult["Target"] = self.pluginResult["subdomain"] + [kwargs["config"]["Target"]]
-        self.pluginResult["Target"] = list(set(self.pluginResult["Target"]))
+        assert(type(kwargs["config"]["Target"]) == type([]))
+        self.pluginResult["target"] = self.Result["subdomain"] + kwargs["config"]["Target"]
+        self.pluginResult["target"] = list(set(self.pluginResult["target"]))
+        self.pluginResult["result"] = self.Result
+        self.pluginResult["save"] = self.Save
         return self.pluginResult
 
 
@@ -88,9 +98,8 @@ class customPlugin(_up.Plugin):
         outPath, myProxy, cmd, resultPath = self.setEnv(kwargs)
         self.getResult(cmd)
         self.pluginResult = self.extractData(resultPath)
-        self.pluginResult["other"].append(outPath)
         self.pluginResult = self.resultFilter(kwargs)
-        pInfo(f"输出子域名数量：{len(self.pluginResult['Target'])}")
+        pInfo(f"输出子域名数量：{len(self.pluginResult['target'])}")
         # print(self.pluginResult['Target'])
         return self.pluginResult
     

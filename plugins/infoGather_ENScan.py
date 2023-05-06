@@ -11,11 +11,17 @@ class customPlugin(_up.Plugin):
     """
     def __init__(self):
         self.TYPE = "infoGather"
+        self.Target = []
+        self.Result = {}
+        self.Save = {
+            "OutputPath":[],
+            "Command":[],
+            "CommandResult":[]
+            }
         self.pluginResult = {
-            "subdomain": [],
-            "ip": [],
-            "other": [],
-            "Target": []
+            "target": [],
+            "result": {},
+            "save": {}
         }
         
     def extractData(self, path):
@@ -33,6 +39,7 @@ class customPlugin(_up.Plugin):
                 for row in ws[f'C2:C{ws.max_row}']:
                     for cell in row:
                         result.append(cell.value)
+                pInfo(result)
                 return result
             def extractAPP():
                 result = []
@@ -50,11 +57,13 @@ class customPlugin(_up.Plugin):
                 resultXlsx = load_workbook(
                     os.path.join(path, _fl)
                 )
-                self.pluginResult["subdomain"] = extractICP()
-                self.pluginResult["app"] = extractAPP()
+                self.Result["subdomain"] = extractICP()
+                self.Result["app"] = extractAPP()
                 continue
         except Exception as e:
             pInfo(f"|--插件提取数据出错：{e}")
+            self.Result["subdomain"] = []
+            self.Result["app"] = []
 
     def setEnv(self, kwargs):
         """
@@ -64,6 +73,7 @@ class customPlugin(_up.Plugin):
         import time
 
         outPath = f"out/infoGather_ENScan/{int(round(time.time() * 1000))}"
+        self.Save["OutputPath"].append(outPath)
         pInfo(f"|--设定结果导出位置：{outPath}")
         myProxy = "https://" + kwargs["config"]["proxy"]["https"]
         pInfo(f"|--正在使用代理：{myProxy}")
@@ -71,14 +81,17 @@ class customPlugin(_up.Plugin):
         import os 
         if not os.path.exists(outPath):
             os.makedirs(outPath)
-        cmd = cmd.format(outPath, kwargs["config"]["Target"])
+        cmd = cmd.format(outPath, kwargs["config"]["Target"][0])
         pInfo(f"|--设定执行命令：{cmd}")
+        self.Save["Command"].append(cmd)
         return outPath, myProxy, cmd
         
     def getResult(self, cmd):
         import subprocess
         res = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, error_msgs = res.communicate()
+        import base64
+        self.Save["CommandResult"].append(base64.b64encode(output).decode("utf8"))
         print(output.decode(encoding='utf-8'))
 
     def resultFilter(self, kwargs):
@@ -86,11 +99,11 @@ class customPlugin(_up.Plugin):
         安装相邻执行的两个插件的需要对target进行修改
         将Target变为ICP备案的域名列表
         """
-        if type(self.pluginResult["Target"]) == type(""):
-            self.pluginResult["Target"] = [self.pluginResult["Target"]] + [kwargs["config"]["Target"]]
-        self.pluginResult["Target"] += list(set(self.pluginResult["subdomain"]))
-        self.pluginResult["Target"] = list(set(self.pluginResult["Target"]))
-
+        assert(type(kwargs["config"]["Target"]) == type([]))
+        self.pluginResult["target"] = self.Result["subdomain"] + kwargs["config"]["Target"]
+        self.pluginResult["target"] = list(set(self.pluginResult["target"]))
+        self.pluginResult["result"] = self.Result
+        self.pluginResult["save"] = self.Save
         return self.pluginResult
     
     def run(self, *args, **kwargs):
@@ -101,11 +114,14 @@ class customPlugin(_up.Plugin):
             kwargs["config"]: 导入的配置
         
         Returns:
-            dict: 提取子域名、APP数据，保存导出文件的路径
+            dict: {
+                target(list):下一个插件的待测目标,
+                result(dict):当前此插件的经过处理的运行结果,
+                save(dict):此插件运行过程中的信息存档
+            }
         """
         outPath, myProxy, cmd = self.setEnv(kwargs)
         self.getResult(cmd)
         self.extractData(outPath)
-        self.pluginResult["other"].append(outPath)
         self.pluginResult = self.resultFilter(kwargs)
         return self.pluginResult

@@ -5,11 +5,11 @@ proxy:
 plugin:
   # 控制流程中keyword顺序
   infoGather:
-    ENScan:
-    # 插件名须与plugins/文件名.py对应
-      cmd: "module/ENScan_GO/ENScan -debug -is-merge -branch -o {} -n {}"
-    OneForAll:
-      cmd: "python module/OneForAll/oneforall.py --targets {} --fmt csv --path {} run"
+    # ENScan:
+    # # 插件名须与plugins/文件名.py对应
+    #   cmd: "module/ENScan_GO/ENScan -debug -is-merge -branch -o {} -n {}"
+    # OneForAll:
+    #   cmd: "python module/OneForAll/oneforall.py --targets {} --fmt csv --path {} run"
     ksubdomain:
       cmd: "module/ksubdomain/ksubdomain enum --dl {} -o {} --skip-wild"
   targetCheck:

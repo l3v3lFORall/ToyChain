@@ -13,3 +13,5 @@ def save(path, data):
         commonAPI.pDebug(f"|-临时输出写入{tempDataPath}")
     except Exception as e:
         commonAPI.pInfo(f"|-临时输出写入出错 {e}")
+    finally:
+        return tempDataPath

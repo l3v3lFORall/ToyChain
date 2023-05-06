@@ -16,7 +16,7 @@ class one():
     WORK_ROOT = os.path.abspath(os.path.dirname(__file__))
     def __init__(self, slience='n', target="baidu.com"):
         self.slience = slience
-        self.target = target
+        self.target = [target]
         self.tempData = None
         
     def printBanner(self):
@@ -110,7 +110,7 @@ class one():
         for phase, plugin in pluginRoutine.items():
             commonAPI.pInfo(f"|- {phase}阶段 执行{plugin}")
             self.tempData = pluginAPI.startPlugin(
-                phase, plugin, self.runtimeCfg, target=self.target, other=self.tempData
+                phase, plugin, self.runtimeCfg, target=self.target, pre=self.tempData
             )
 
 

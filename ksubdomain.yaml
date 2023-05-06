@@ -1,0 +1,4 @@
+src_ip: 192.168.0.46
+device: eth0
+src_mac: fa:16:3e:41:98:c6
+dst_mac: fa:16:3e:41:98:99
